@@ -5,16 +5,22 @@ import { decodeBase64 } from 'tweetnacl-util';
 import { encodeBase16, encodeBase64 } from '../index';
 import { CLPublicKey } from './CLValue';
 import { byteHash } from './Contracts';
-import eccrypto from 'eccrypto';
-import * as secp256k1 from 'ethereum-cryptography/secp256k1';
 import KeyEncoder from 'key-encoder';
-import { sha256 } from 'ethereum-cryptography/sha256';
-import { CasperHDKey } from './CasperHDKey';
+
+import * as secp256k1 from '@noble/secp256k1';
+import { sha256 } from '@noble/hashes/sha256';
+import { hmac } from '@noble/hashes/hmac';
 
 const keyEncoder = new KeyEncoder('secp256k1');
 
 const ED25519_PEM_SECRET_KEY_TAG = 'PRIVATE KEY';
 const ED25519_PEM_PUBLIC_KEY_TAG = 'PUBLIC KEY';
+
+secp256k1.utils.hmacSha256Sync = (key: Uint8Array, ...msgs: Uint8Array[]) => {
+  const h = hmac.create(sha256, key);
+  msgs.forEach(msg => h.update(msg));
+  return h.digest();
+};
 
 /**
  * Supported types of Asymmetric Key algorithm
@@ -312,8 +318,8 @@ export class Secp256K1 extends AsymmetricKey {
    * Generating a new Secp256K1 key pair
    */
   public static new() {
-    const privateKey = eccrypto.generatePrivate();
-    const publicKey = Uint8Array.from(eccrypto.getPublicCompressed(privateKey));
+    const privateKey = secp256k1.utils.randomPrivateKey();
+    const publicKey = Uint8Array.from(secp256k1.getPublicKey(privateKey, true));
     return new Secp256K1(publicKey, privateKey);
   }
 
@@ -443,8 +449,8 @@ export class Secp256K1 extends AsymmetricKey {
    * @param msg
    */
   public sign(msg: Uint8Array): Uint8Array {
-    const res = secp256k1.ecdsaSign(sha256(Buffer.from(msg)), this.privateKey);
-    return res.signature;
+    const res = secp256k1.signSync(sha256(Buffer.from(msg)), this.privateKey);
+    return res;
   }
 
   /**
@@ -453,7 +459,7 @@ export class Secp256K1 extends AsymmetricKey {
    * @param msg
    */
   public verify(signature: Uint8Array, msg: Uint8Array) {
-    return secp256k1.ecdsaVerify(
+    return secp256k1.verify(
       signature,
       sha256(Buffer.from(msg)),
       this.publicKey.value()
@@ -465,7 +471,7 @@ export class Secp256K1 extends AsymmetricKey {
    * @param privateKey
    */
   public static privateToPublicKey(privateKey: Uint8Array): Uint8Array {
-    return secp256k1.publicKeyCreate(privateKey, true);
+    return secp256k1.getPublicKey(privateKey, true);
   }
 
   /**
@@ -476,14 +482,5 @@ export class Secp256K1 extends AsymmetricKey {
     const privateKey = Secp256K1.parsePrivateKeyFile(privateKeyPath);
     const publicKey = Secp256K1.privateToPublicKey(privateKey);
     return Secp256K1.parseKeyPair(publicKey, privateKey, 'raw');
-  }
-
-  /**
-   * From hdKey derive a child Secp256K1 key
-   * @param hdKey
-   * @param index
-   */
-  public static deriveIndex(hdKey: CasperHDKey, index: number) {
-    return hdKey.deriveIndex(index);
   }
 }

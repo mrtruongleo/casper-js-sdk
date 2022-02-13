@@ -1,9 +1,10 @@
 import * as nacl from 'tweetnacl-ts';
-import * as secp256k1 from 'ethereum-cryptography/secp256k1';
-import { sha256 } from 'ethereum-cryptography/sha256';
 
 import { CLPublicKey } from './CLValue/';
 import { AsymmetricKey } from './Keys';
+
+import * as secp256k1 from '@noble/secp256k1';
+import { sha256 } from '@noble/hashes/sha256';
 
 /**
  * Method for formatting messages with Casper header.
@@ -58,7 +59,7 @@ export const verifyMessageSignature = (
     return nacl.sign_detached_verify(messageWithHeader, signature, key.value());
   }
   if (key.isSecp256K1()) {
-    return secp256k1.ecdsaVerify(
+    return secp256k1.verify(
       signature,
       sha256(Buffer.from(messageWithHeader)),
       key.value()

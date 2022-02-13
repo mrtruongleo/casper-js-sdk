@@ -3,7 +3,6 @@ import { DeployUtil, Keys, CLPublicKey } from './index';
 import { encodeBase16 } from './Conversions';
 import { Deploy, DeployParams, ExecutableDeployItem } from './DeployUtil';
 import { AsymmetricKey, SignatureAlgorithm } from './Keys';
-import { CasperHDKey } from './CasperHDKey';
 import { BigNumber } from '@ethersproject/bignumber';
 
 export class CasperClient {
@@ -84,15 +83,6 @@ export class CasperClient {
       default:
         throw new Error('Invalid signature algorithm');
     }
-  }
-
-  /**
-   * Create a new hierarchical deterministic wallet, supporting bip32 protocol
-   *
-   * @param seed The seed buffer for parent key
-   */
-  public newHdWallet(seed: Uint8Array): CasperHDKey {
-    return CasperHDKey.fromMasterSeed(seed);
   }
 
   /**

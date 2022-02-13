@@ -7,7 +7,6 @@ import * as path from 'path';
 import * as os from 'os';
 import { Keys } from '../../src/lib';
 import { Secp256K1, SignatureAlgorithm } from '../../src/lib/Keys';
-import { decodeBase16 } from '../../src';
 
 let casperClient: CasperClient;
 describe('CasperClient', () => {
@@ -114,20 +113,6 @@ describe('CasperClient', () => {
       edKeyPair.publicKey.value()
     );
     expect(loadedKeyPair.privateKey).to.deep.equal(edKeyPair.privateKey);
-  });
-
-  it('should create a HK wallet and derive child account correctly', function() {
-    const seed =
-      'fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc9c6c3c0bdbab7b4b1aeaba8a5a29f9c999693908d8a8784817e7b7875726f6c696663605d5a5754514e4b484542';
-    const hdKey = casperClient.newHdWallet(decodeBase16(seed));
-    const secpKey1 = hdKey.deriveIndex(1);
-    const msg = Buffer.from('hello world');
-    const signature = secpKey1.sign(msg);
-    expect(secpKey1.verify(signature, msg)).to.be.equal(true);
-
-    const secpKey2 = hdKey.deriveIndex(2);
-    const signature2 = secpKey2.sign(msg);
-    expect(secpKey2.verify(signature2, msg)).to.be.equal(true);
   });
 
   it('should create deploy from Deploy JSON with ttl in minutes', function() {
