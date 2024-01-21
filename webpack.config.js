@@ -42,12 +42,13 @@ const clientConfig = {
   resolve: {
     ...common.resolve,
     fallback: {
-      crypto: require.resolve('crypto-browserify'),
+      crypto: require.resolve('react-native-crypto'),
       stream: require.resolve('stream-browserify'),
       asert: require.resolve('assert'),
       http: require.resolve('@tradle/react-native-http'),
       url: require.resolve('url/'),
-      fs: false
+      fs: require.resolve('react-native-level-fs'),
+      
     }
   },
   plugins: [
