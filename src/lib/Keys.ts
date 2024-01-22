@@ -449,9 +449,7 @@ export class Secp256K1 extends AsymmetricKey {
    * @param msg
    */
   public sign(msg: Uint8Array): Uint8Array {
-    const res = secp256k1.signSync(sha256(Buffer.from(msg)), this.privateKey, {
-      der: false
-    });
+    const res = secp256k1.signSync(sha256(Buffer.from(msg)), this.privateKey);
     return res;
   }
 
